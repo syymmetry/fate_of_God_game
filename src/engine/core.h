@@ -9,6 +9,8 @@ extern SDL_Renderer* renderer;
 
 bool InitEngine();
 void RunGameLoop();
-void CleanupEngine();
+void cleanupEngine();
+
+float GetDeltaTime();
 
 #endif

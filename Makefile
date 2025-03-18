@@ -1,8 +1,8 @@
 CC = gcc
 CFLASS = -Wall -Wextra -I./src/engine -I./src/game
-LDFLAGS = -lSDL2
+LDFLAGS = -lSDL2 -lSDL2_image 
 
-SRCS = main.c src/engine/core.core
+SRCS = SRCS = main.c src/engine/core.c src/engine/render.c
 OBJS = $(SRCS:.c=.o)
 
 all: game
