@@ -3,6 +3,9 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
 
+TTF_Font* titleFont = NULL;
+TTF_Font* menuFont = NULL;
+
 SDL_Texture* LoadTexture(const char* filename, SDL_Renderer* renderer) {
     SDL_Texture* texture = NULL;
     SDL_Surface* surface = IMG_Load(filename);
@@ -21,14 +24,10 @@ void RenderTexture(SDL_Texture* texture, SDL_Renderer* renderer, int x, int y, i
     SDL_RenderCopy(renderer, texture, NULL, &dest);
 }
 
-void RenderText(const char* text, int x, int y, SDL_Color color) {
-    static TTF_Font* font = NULL;
+void RenderText(TTF_Font* font, const char* text, int x, int y, SDL_Color color) {
     if (!font) {
-        font = TTF_OpenFont("assets/font.ttf", 48);
-        if (!font) {
-            SDL_Log("Ошибка загрузки шрифта: %s", TTF_GetError());
-            return;
-        }
+        SDL_Log("Шрифт не загружен!");
+        return;
     }
 
     SDL_Surface* surface = TTF_RenderText_Solid(font, text, color);
@@ -49,22 +48,22 @@ void RenderText(const char* text, int x, int y, SDL_Color color) {
     SDL_Rect dest = {x, y, w, h};
     SDL_RenderCopy(renderer, texture, NULL, &dest);
 
-    SDL_DestroyTexture(texture); 
+    SDL_DestroyTexture(texture);
 }
 
-void RenderTextWithShadow(const char* text, int x, int y, SDL_Color color, SDL_Color shadowColor) {
-    RenderText(text, x + 2, y + 2, shadowColor);
-    RenderText(text, x, y, color);
+void RenderTextWithShadow(TTF_Font* font, const char* text, int x, int y, SDL_Color color, SDL_Color shadowColor) {
+    RenderText(font, text, x + 2, y + 2, shadowColor);
+    RenderText(font, text, x, y, color);
 }
 
-void RenderButton(const char* text, int x, int y, int w, int h) {
+void RenderButton(TTF_Font* font, const char* text, int x, int y, int w, int h) {
     SDL_Texture* borderTexture = LoadTexture("assets/border.png", renderer);
     if (!borderTexture) {
-        SDL_Log("Ошибка загрузки текстуры рамки: %s", SDL_GetError()); 
+        SDL_Log("Ошибка загрузки текстуры рамки: %s", SDL_GetError());
         return;
     }
     RenderTexture(borderTexture, renderer, x, y, w, h);
 
     SDL_Color gold = {255, 215, 0, 255};
-    RenderText(text, x + 10, y + 10, gold);
+    RenderText(font, text, x + 10, y + 10, gold);
 }

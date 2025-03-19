@@ -1,5 +1,5 @@
 #include "core.h"
-#include "render.h" 
+#include "render.h"
 #include <stdio.h>
 #include <SDL2/SDL_mixer.h>
 
@@ -18,7 +18,7 @@ float GetDeltaTime() {
 }
 
 int InitSDL() {
-    if (SDL_Init(SDL_INIT_VIDEO) != 0) {
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0) {
         SDL_Log("Ошибка инициализации SDL: %s", SDL_GetError());
         return false;
     }
@@ -35,7 +35,7 @@ int InitSDL() {
     }
 
     if (Mix_PlayMusic(backgroundMusic, -1) == -1) {
-        SDL_Log("Ошибка загрузки музыки: %s", Mix_GetError());
+        SDL_Log("Ошибка воспроизведения музыки: %s", Mix_GetError());
         return false;
     }
 
@@ -54,7 +54,6 @@ int InitSDL() {
         return false;
     }
 
-
     if (!(IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG)) {
         SDL_Log("Ошибка инициализации SDL_image: %s", IMG_GetError());
         return false;
@@ -71,7 +70,6 @@ int InitSDL() {
         return false;
     }
 
-
     return true;
 }
 
@@ -79,6 +77,19 @@ bool InitEngine() {
     if (!InitSDL()) {
         return false;
     }
+
+    titleFont = TTF_OpenFont("assets/title_font.ttf", 48);
+    if (!titleFont) {
+        SDL_Log("Ошибка загрузки шрифта для названия: %s", TTF_GetError());
+        return false;
+    }
+
+    menuFont = TTF_OpenFont("assets/menu_font.ttf", 24);
+    if (!menuFont) {
+        SDL_Log("Ошибка загрузки шрифта для меню: %s", TTF_GetError());
+        return false;
+    }
+
     return true;
 }
 
@@ -86,23 +97,18 @@ void RenderMenu() {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
-
     RenderTexture(backgroundTexture, renderer, 0, 0, 1280, 720);
 
-    // Цвета
     SDL_Color gold = {255, 215, 0, 255};
     SDL_Color darkRed = {139, 0, 0, 255};
-    SDL_Color white = {255, 255, 255, 255};
 
-    RenderTextWithShadow("Fate of God", 450, 50, gold, darkRed);
+    RenderTextWithShadow(titleFont, "Fate of God", 480, 70, gold, darkRed);
 
-    RenderTextWithShadow("Single Player", 500, 200, white, darkRed);
-    RenderTextWithShadow("Battle Net", 500, 250, white, darkRed);
-    RenderTextWithShadow("Gateway: None", 500, 300, white, darkRed);
-    RenderTextWithShadow("Other Multiplayer", 500, 350, white, darkRed);
-    RenderTextWithShadow("ZY-EL 4.5.2", 500, 400, white, darkRed);
-    RenderTextWithShadow("Credits", 500, 450, white, darkRed);
-    RenderTextWithShadow("Cinematics", 500, 500, white, darkRed);
+    RenderButton(menuFont, "Single Player", 500, 200, 280, 50);
+    RenderButton(menuFont, "Settings", 500, 260, 280, 50);
+    RenderButton(menuFont, "Other Multiplayer", 500, 380, 280, 50);
+    RenderButton(menuFont, "Credits", 500, 500, 280, 50);
+    RenderButton(menuFont, "Cinematics", 500, 560, 280, 50);
 
     SDL_RenderPresent(renderer);
 }
@@ -123,12 +129,14 @@ void RunGameLoop() {
                 running = false;
             }
         }
-        
+
         RenderMenu();
     }
 }
 
 void CleanupEngine() {
+    if (titleFont) TTF_CloseFont(titleFont);
+    if (menuFont) TTF_CloseFont(menuFont);
     Mix_FreeMusic(backgroundMusic);
     Mix_CloseAudio();
     SDL_DestroyTexture(backgroundTexture);
