@@ -1,10 +1,12 @@
 #include "core.h"
 #include "render.h" 
 #include <stdio.h>
+#include <SDL2/SDL_mixer.h>
 
 SDL_Window* window = NULL;
 SDL_Renderer* renderer = NULL;
 SDL_Texture* backgroundTexture = NULL;
+Mix_Music* backgroundMusic = NULL;
 
 Uint32 previousTime = 0;
 
@@ -18,6 +20,22 @@ float GetDeltaTime() {
 int InitSDL() {
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
         SDL_Log("Ошибка инициализации SDL: %s", SDL_GetError());
+        return false;
+    }
+
+    if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
+        SDL_Log("Ошибка инициализации SDL_mixer: %s", Mix_GetError());
+        return false;
+    }
+
+    backgroundMusic = Mix_LoadMUS("assets/music.mp3");
+    if (!backgroundMusic) {
+        SDL_Log("Ошибка загрузки музыки: %s", Mix_GetError());
+        return false;
+    }
+
+    if (Mix_PlayMusic(backgroundMusic, -1) == -1) {
+        SDL_Log("Ошибка загрузки музыки: %s", Mix_GetError());
         return false;
     }
 
@@ -68,18 +86,23 @@ void RenderMenu() {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
+
     RenderTexture(backgroundTexture, renderer, 0, 0, 1280, 720);
 
+    // Цвета
     SDL_Color gold = {255, 215, 0, 255};
     SDL_Color darkRed = {139, 0, 0, 255};
     SDL_Color white = {255, 255, 255, 255};
 
-    SDL_Color white = {255, 255, 255, 255};
-    RenderText("Fate of God", 500, 50, white);
-    RenderText("New Game", 550, 200, white);
-    RenderText("Continue", 550, 300, white);
-    RenderText("Settings", 550, 400, white);
-    RenderText("Author", 550, 500, white);
+    RenderTextWithShadow("Fate of God", 450, 50, gold, darkRed);
+
+    RenderTextWithShadow("Single Player", 500, 200, white, darkRed);
+    RenderTextWithShadow("Battle Net", 500, 250, white, darkRed);
+    RenderTextWithShadow("Gateway: None", 500, 300, white, darkRed);
+    RenderTextWithShadow("Other Multiplayer", 500, 350, white, darkRed);
+    RenderTextWithShadow("ZY-EL 4.5.2", 500, 400, white, darkRed);
+    RenderTextWithShadow("Credits", 500, 450, white, darkRed);
+    RenderTextWithShadow("Cinematics", 500, 500, white, darkRed);
 
     SDL_RenderPresent(renderer);
 }
@@ -106,6 +129,9 @@ void RunGameLoop() {
 }
 
 void CleanupEngine() {
+    Mix_FreeMusic(backgroundMusic);
+    Mix_CloseAudio();
+    SDL_DestroyTexture(backgroundTexture);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     IMG_Quit();
