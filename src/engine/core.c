@@ -7,8 +7,9 @@ SDL_Window* window = NULL;
 SDL_Renderer* renderer = NULL;
 SDL_Texture* backgroundTexture = NULL;
 Mix_Music* backgroundMusic = NULL;
-
 Uint32 previousTime = 0;
+InputState inputState = {false, false, false, false};
+
 
 float GetDeltaTime() {
     Uint32 currentTime = SDL_GetTicks();
@@ -93,6 +94,23 @@ bool InitEngine() {
     return true;
 }
 
+bool isMouseOverButton(Button* button, int mouseX, int mouseY) {
+    return (mouseX >= button->x && mouseX <= button->x + button->w &&
+            mouseY >= button->y && mouseY <= button->y + button->h);
+}
+
+void HandleButtonClick(Button* button, int mouseX, int mouseY) {
+    if (isMouseOverButton(button, mouseX, mouseY)) {
+        if (strcmp(button->text, "Single Player") == 0) {
+            // start new game
+            SDL_Log("Sigle Player Clicked");
+        } else if (strcmp(button->text, "Settings") == 0) {
+            // open settings
+            SDL_Log("Settings clicked");
+        }
+    }
+}
+
 void RenderMenu() {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
@@ -104,11 +122,22 @@ void RenderMenu() {
 
     RenderTextWithShadow(titleFont, "Fate of God", 480, 70, gold, darkRed);
 
-    RenderButton(menuFont, "Single Player", 500, 200, 280, 50);
-    RenderButton(menuFont, "Settings", 500, 260, 280, 50);
-    RenderButton(menuFont, "Other Multiplayer", 500, 380, 280, 50);
-    RenderButton(menuFont, "Credits", 500, 500, 280, 50);
-    RenderButton(menuFont, "Cinematics", 500, 560, 280, 50);
+    Button buttons[] = {
+        {500, 200, 280, 50, "Single Player", false},
+        {500, 260, 280, 50, "Settings", false},
+        {500, 380, 280, 50, "Other Multiplayer", false},
+        {500, 500, 280, 50, "Credits", false},
+        {500, 560, 280, 50, "Cinematics", false}
+    };
+
+    int mouseX, mouseY;
+    SDL_GetMouseState(&mouseX, &mouseY);
+
+    for (size_t i = 0; i < sizeof(buttons) / sizeof(buttons[0]); i++) {
+        buttons[i].isHovered = isMouseOverButton(&buttons[i], mouseX, mouseY);
+        SDL_Color color = buttons[i].isHovered ? (SDL_Color){255, 255, 0, 255} : gold;
+        RenderButton(menuFont, buttons[i].text, buttons[i].x, buttons[i].y, buttons[i].w, buttons[i].h, color);
+    }
 
     SDL_RenderPresent(renderer);
 }
@@ -127,6 +156,31 @@ void RunGameLoop() {
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
                 running = false;
+            } else if (event.type == SDL_MOUSEBUTTONDOWN) {
+                int mouseX, mouseY;
+                SDL_GetMouseState(&mouseX, &mouseY);
+
+                Button buttons[] = {
+                    {500, 200, 280, 50, "Single Player", false},
+                    {500, 260, 280, 50, "Settings", false},
+                    {500, 380, 280, 50, "Other Multiplayer", false},
+                    {500, 500, 280, 50, "Credits", false},
+                    {500, 560, 280, 50, "Cinematics", false}
+                };
+
+                for (size_t i = 0; i < sizeof(buttons) / sizeof(buttons[0]); i++) {
+                    HandleButtonClick(&buttons[i], mouseX, mouseY);
+                }
+            } else if (event.type == SDL_KEYDOWN || event.type == SDL_KEYUP) {
+                bool iskeyDown = (event.type == SDL_KEYDOWN);
+
+                switch (event.key.keysym.sym) {
+                    case SDLK_w:
+                        inputState.moveUp = iskeyDown;
+                        break;
+                    case SDLK_s:
+                        inputState.moveDown = iskeyDown;
+                }
             }
         }
 

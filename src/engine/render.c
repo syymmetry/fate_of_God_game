@@ -56,14 +56,12 @@ void RenderTextWithShadow(TTF_Font* font, const char* text, int x, int y, SDL_Co
     RenderText(font, text, x, y, color);
 }
 
-void RenderButton(TTF_Font* font, const char* text, int x, int y, int w, int h) {
+void RenderButton(TTF_Font* font, const char* text, int x, int y, int w, int h, SDL_Color color) {
     SDL_Texture* borderTexture = LoadTexture("assets/border.png", renderer);
     if (!borderTexture) {
         SDL_Log("Ошибка загрузки текстуры рамки: %s", SDL_GetError());
         return;
     }
     RenderTexture(borderTexture, renderer, x, y, w, h);
-
-    SDL_Color gold = {255, 215, 0, 255};
-    RenderText(font, text, x + 10, y + 10, gold);
+    RenderText(font, text, x + 10, y + 10, color);
 }

@@ -12,6 +12,6 @@ SDL_Texture* LoadTexture(const char* filename, SDL_Renderer* renderer);
 void RenderTexture(SDL_Texture* texture, SDL_Renderer* renderer, int x, int y, int w, int h);
 void RenderText(TTF_Font* font, const char* text, int x, int y, SDL_Color color);
 void RenderTextWithShadow(TTF_Font* font, const char* text, int x, int y, SDL_Color color, SDL_Color shadowColor);
-void RenderButton(TTF_Font* font, const char* text, int x, int y, int w, int h);
+void RenderButton(TTF_Font* font, const char* text, int x, int y, int w, int h, SDL_Color color);
 
 #endif 
